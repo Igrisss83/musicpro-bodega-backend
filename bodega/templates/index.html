@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - Bodega Central{% endblock %}
+
+{% block content %}
+<div class="row align-items-center py-5">
+    <div class="col-lg-7 mb-4 mb-lg-0">
+        <span class="badge bg-danger text-white px-3 py-2 rounded-pill fw-semibold mb-3">
+            <i class="bi bi-geo-alt-fill me-1"></i> Providencia, Santiago de Chile
+        </span>
+        <h1 class="display-4 fw-extrabold text-dark mb-3">
+            Sistema de Gestión de <span class="text-danger">Bodega Central</span> & Distribución
+        </h1>
+        <p class="lead text-secondary mb-4">
+            Plataforma administrativa para la orquestación de inventario masivo, preparación de despachos y trazabilidad de instrumentos musicales premium de cara a la gira <strong>Music Pro Tour 2026</strong>.
+        </p>
+
+        <div class="d-flex flex-wrap gap-3 mb-4">
+            <a href="{% url 'dashboard' %}" class="btn btn-danger btn-lg px-4 py-3 fw-bold shadow-sm">
+                <i class="bi bi-speedometer2 me-2"></i> Acceso Administrativo
+            </a>
+            <a href="{% url 'inventario' %}" class="btn btn-outline-dark btn-lg px-4 py-3 fw-bold">
+                <i class="bi bi-search me-2"></i> Consultar Catálogo ({{ total_items }} Ítems)
+            </a>
+        </div>
+
+        <div class="row g-3 text-muted border-top pt-4 mt-2">
+            <div class="col-6 col-sm-4">
+                <div class="fw-bold text-dark fs-5"><i class="bi bi-truck text-danger me-1"></i> &lt; 24 Horas</div>
+                <small>Meta Despacho Express</small>
+            </div>
+            <div class="col-6 col-sm-4">
+                <div class="fw-bold text-dark fs-5"><i class="bi bi-building text-danger me-1"></i> Megatiendas</div>
+                <small>Rock, DJ, Reggaetón</small>
+            </div>
+            <div class="col-6 col-sm-4">
+                <div class="fw-bold text-dark fs-5"><i class="bi bi-shield-check text-danger me-1"></i> Trazabilidad</div>
+                <small>Control de Movimientos</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card card-custom bg-dark text-white p-4 position-relative overflow-hidden border-0 shadow-lg">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <span class="badge bg-danger">Operación 2026</span>
+                    <i class="bi bi-headset-vr fs-1 text-danger"></i>
+                </div>
+                <h3 class="fw-bold text-white mb-3">Music Pro S.A.</h3>
+                <p class="text-light opacity-75 small">
+                    Desde 1988 liderando la importación y distribución de sonido profesional e instrumentos de alta gama en Chile. 
+                </p>
+
+                <div class="p-3 bg-secondary bg-opacity-20 rounded-3 mb-3 border border-secondary border-opacity-25">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-box-seam fs-2 text-warning"></i>
+                        <div>
+                            <div class="fw-bold">Gestión con ORM y BD Relacional</div>
+                            <small class="text-light opacity-75">Arquitectura MVT con SQLite y Persistencia (Evaluación 2)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{% url 'dashboard' %}" class="btn btn-light w-100 fw-bold py-2 mt-2">
+                    Ingresar al Dashboard <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<!-- SECCIÓN CARACTERÍSTICAS DEL MÓDULO -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card card-custom h-100 p-3">
+            <div class="card-body">
+                <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-3 d-inline-block mb-3">
+                    <i class="bi bi-boxes fs-3"></i>
+                </div>
+                <h5 class="fw-bold">Control de Existencias</h5>
+                <p class="text-secondary small mb-0">
+                    Monitoreo en tiempo real del stock disponible y niveles mínimos críticos para evitar quiebres de inventario virtual en sucursales.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom h-100 p-3">
+            <div class="card-body">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 d-inline-block mb-3">
+                    <i class="bi bi-geo-alt fs-3"></i>
+                </div>
+                <h5 class="fw-bold">Ubicación Física</h5>
+                <p class="text-secondary small mb-0">
+                    Mapeo preciso de pasillos y estantes dentro de la bodega principal para agilizar la preparación de despachos y agilizar la logística.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom h-100 p-3">
+            <div class="card-body">
+                <div class="bg-success bg-opacity-10 text-success rounded-3 p-3 d-inline-block mb-3">
+                    <i class="bi bi-journal-text fs-3"></i>
+                </div>
+                <h5 class="fw-bold">Historial de Movimientos</h5>
+                <p class="text-secondary small mb-0">
+                    Registro detallado de ingresos y salidas con responsable y observacionales glosas para máxima trazabilidad operativa.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

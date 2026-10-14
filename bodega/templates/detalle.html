@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Ficha de {{ producto.nombre }}{% endblock %}
+
+{% block content %}
+<!-- BREADCRUMB NAVEGACIÓN -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-decoration-none text-muted">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'inventario' %}" class="text-decoration-none text-muted">Inventario</a></li>
+        <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">{{ producto.codigo }}</li>
+    </ol>
+</nav>
+
+<!-- HEADER MODO SHOW -->
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 pb-2 border-bottom">
+    <div>
+        <span class="badge bg-dark font-monospace px-3 py-2 fs-6 mb-2">{{ producto.codigo }}</span>
+        <h2 class="fw-extrabold text-dark mb-1">{{ producto.nombre }}</h2>
+        <p class="text-secondary mb-0">
+            Categoría: <strong class="text-dark">{{ producto.categoria }}</strong> | Ubicación: <strong class="text-danger"><i class="bi bi-geo-alt me-1"></i>{{ producto.pasillo }} - {{ producto.estante }}</strong>
+        </p>
+    </div>
+    <div class="mt-3 mt-md-0 d-flex gap-2">
+        <a href="{% url 'movimiento_nuevo' %}?codigo={{ producto.codigo }}" class="btn btn-danger fw-bold shadow-sm">
+            <i class="bi bi-arrow-down-up me-1"></i> Registrar Entrada / Salida
+        </a>
+        <a href="{% url 'inventario' %}" class="btn btn-outline-secondary fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> Volver al Catálogo
+        </a>
+    </div>
+</div>
+
+<!-- RESUMEN FICHA TÉCNICA (CARDS) -->
+<div class="row g-4 mb-4">
+    <!-- Card Estado Stock -->
+    <div class="col-md-4">
+        <div class="card card-custom p-3 border-start border-4 {% if producto.stock_actual == 0 %}border-danger{% elif producto.es_critico %}border-warning{% else %}border-success{% endif %} h-100">
+            <div class="card-body">
+                <span class="text-uppercase text-muted fw-semibold small">Estado del Stock</span>
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                    <div>
+                        <h2 class="fw-extrabold mb-0">{{ producto.stock_actual }} <small class="fs-6 text-muted fw-normal">unidades</small></h2>
+                        <small class="text-muted">Stock Mínimo Exigido: <strong>{{ producto.stock_minimo }}</strong></small>
+                    </div>
+                    <span class="badge {{ producto.estado_badge }} px-3 py-2 fs-6">
+                        {{ producto.estado_label }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Ubicación en Pasillo/Estante -->
+    <div class="col-md-4">
+        <div class="card card-custom p-3 border-start border-4 border-info h-100">
+            <div class="card-body">
+                <span class="text-uppercase text-muted fw-semibold small">Ubicación Logística</span>
+                <div class="mt-2">
+                    <h5 class="fw-bold text-dark mb-1"><i class="bi bi-signpost-split text-info me-2"></i>{{ producto.pasillo }}</h5>
+                    <p class="text-muted mb-0"><i class="bi bi-box me-1"></i>{{ producto.estante }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Precio Comercial -->
+    <div class="col-md-4">
+        <div class="card card-custom p-3 border-start border-4 border-dark h-100">
+            <div class="card-body">
+                <span class="text-uppercase text-muted fw-semibold small">Valor Unitario (CLP)</span>
+                <div class="mt-2">
+                    <h2 class="fw-extrabold text-dark mb-0">${{ producto.precio }}</h2>
+                    <small class="text-muted"><i class="bi bi-currency-dollar me-1"></i>Precio de Referencia Music Pro</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TABLA DE TRAZABILIDAD E HISTORIAL DE MOVIMIENTOS -->
+<div class="card card-custom overflow-hidden">
+    <div class="card-header bg-white py-3 border-0 d-flex align-items-center justify-content-between">
+        <h5 class="fw-bold text-dark mb-0">
+            <i class="bi bi-journal-text text-danger me-2"></i>Historial de Movimientos & Trazabilidad
+        </h5>
+        <span class="badge bg-light text-dark border">
+            Total Movimientos: {{ movimientos|length }}
+        </span>
+    </div>
+    <div class="card-body p-0">
+        {% if movimientos %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Fecha / Hora</th>
+                            <th class="text-center">Tipo Operación</th>
+                            <th class="text-center">Cantidad</th>
+                            <th>Bodega / Ubicación</th>
+                            <th>Responsable</th>
+                            <th class="pe-4">Glosa / Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in movimientos %}
+                        <tr>
+                            <td class="ps-4 text-nowrap fw-semibold text-secondary">
+                                <i class="bi bi-calendar-event me-1"></i>{{ m.fecha|date:"Y-m-d H:i" }}
+                            </td>
+                            <td class="text-center">
+                                {% if m.tipo == 'Ingreso' or m.tipo == 'ENTRADA' %}
+                                    <span class="badge bg-success bg-opacity-15 text-success border border-success px-3 py-2">
+                                        <i class="bi bi-arrow-down-left me-1"></i> Entrada
+                                    </span>
+                                {% elif m.tipo == 'AJUSTE' %}
+                                    <span class="badge bg-warning bg-opacity-15 text-warning border border-warning px-3 py-2">
+                                        <i class="bi bi-sliders me-1"></i> Ajuste
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-15 text-danger border border-danger px-3 py-2">
+                                        <i class="bi bi-arrow-up-right me-1"></i> Salida
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center fw-bold fs-6">
+                                {{ m.cantidad }} un.
+                            </td>
+                            <td class="fw-medium text-dark small">
+                                <i class="bi bi-building me-1 text-muted"></i>{{ m.bodega.nombre }}
+                            </td>
+                            <td class="fw-medium text-dark">
+                                <i class="bi bi-person-circle me-1 text-muted"></i>{{ m.responsable }}
+                            </td>
+                            <td class="pe-4 text-secondary small">
+                                {{ m.glosa }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                <p class="mb-0">No existen movimientos registrados para este producto todavía.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

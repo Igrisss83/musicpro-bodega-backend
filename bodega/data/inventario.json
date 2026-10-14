@@ -1,0 +1,165 @@
+[
+    {
+        "codigo": "GTR-FEN-001",
+        "nombre": "Fender Stratocaster Player II - Cherry Sunburst",
+        "categoria": "Guitarras",
+        "stock_actual": 7,
+        "stock_minimo": 5,
+        "pasillo": "Pasillo A",
+        "estante": "Estante 1 - Nivel 2",
+        "precio": 849990,
+        "movimientos": [
+            {
+                "fecha": "2026-09-05 11:55",
+                "tipo": "Salida",
+                "cantidad": 1,
+                "responsable": "jose",
+                "glosa": "aaa"
+            },
+            {
+                "fecha": "2026-09-01 10:30",
+                "tipo": "Ingreso",
+                "cantidad": 10,
+                "responsable": "Carlos Mendoza (Jefe de Bodega)",
+                "glosa": "Recepción lote importación Fender Chile #INV-882"
+            },
+            {
+                "fecha": "2026-09-03 14:15",
+                "tipo": "Salida",
+                "cantidad": 2,
+                "responsable": "Ana Torres (Logística)",
+                "glosa": "Despacho a Sucursal Providencia para gira Music Pro 2026"
+            }
+        ]
+    },
+    {
+        "codigo": "AUD-YAM-002",
+        "nombre": "Yamaha HS8 Monitor de Estudio Activo (Par)",
+        "categoria": "Audio",
+        "stock_actual": 3,
+        "stock_minimo": 4,
+        "pasillo": "Pasillo B",
+        "estante": "Estante 4 - Nivel 1",
+        "precio": 659980,
+        "movimientos": [
+            {
+                "fecha": "2026-08-25 09:00",
+                "tipo": "Ingreso",
+                "cantidad": 5,
+                "responsable": "Carlos Mendoza (Jefe de Bodega)",
+                "glosa": "Ingreso stock inicial desde proveedor Yamaha"
+            },
+            {
+                "fecha": "2026-09-02 11:45",
+                "tipo": "Salida",
+                "cantidad": 2,
+                "responsable": "Felipe Rivas (Operador)",
+                "glosa": "Asignación escenario principal Music Pro Tour"
+            }
+        ]
+    },
+    {
+        "codigo": "KBD-ROL-003",
+        "nombre": "Roland Fantom-06 Sintetizador Workstation",
+        "categoria": "Teclados",
+        "stock_actual": 0,
+        "stock_minimo": 2,
+        "pasillo": "Pasillo A",
+        "estante": "Estante 2 - Nivel 3",
+        "precio": 1490990,
+        "movimientos": [
+            {
+                "fecha": "2026-08-20 16:00",
+                "tipo": "Ingreso",
+                "cantidad": 3,
+                "responsable": "Carlos Mendoza (Jefe de Bodega)",
+                "glosa": "Stock inicial tienda central"
+            },
+            {
+                "fecha": "2026-09-04 18:20",
+                "tipo": "Salida",
+                "cantidad": 3,
+                "responsable": "Ana Torres (Logística)",
+                "glosa": "Despacho urgente escenario Vña del Mar"
+            }
+        ]
+    },
+    {
+        "codigo": "PER-DW-004",
+        "nombre": "Batería Acústica DW Design Series 5 Piezas",
+        "categoria": "Percusión",
+        "stock_actual": 6,
+        "stock_minimo": 3,
+        "pasillo": "Pasillo C",
+        "estante": "Estante 1 - Nivel 1",
+        "precio": 1899990,
+        "movimientos": [
+            {
+                "fecha": "2026-08-28 12:00",
+                "tipo": "Ingreso",
+                "cantidad": 8,
+                "responsable": "Carlos Mendoza (Jefe de Bodega)",
+                "glosa": "Recepción contenedores de importación DW Drums"
+            },
+            {
+                "fecha": "2026-09-01 15:30",
+                "tipo": "Salida",
+                "cantidad": 2,
+                "responsable": "Felipe Rivas (Operador)",
+                "glosa": "Traslado a Sucursal Megatienda del Rock"
+            }
+        ]
+    },
+    {
+        "codigo": "MIC-SHU-005",
+        "nombre": "Micrófono Dinámico Shure SM7B Cardioide",
+        "categoria": "Audio",
+        "stock_actual": 14,
+        "stock_minimo": 6,
+        "pasillo": "Pasillo B",
+        "estante": "Estante 3 - Nivel 2",
+        "precio": 439990,
+        "movimientos": [
+            {
+                "fecha": "2026-08-15 10:00",
+                "tipo": "Ingreso",
+                "cantidad": 20,
+                "responsable": "Carlos Mendoza (Jefe de Bodega)",
+                "glosa": "Abastecimiento masivo microfonía pro"
+            },
+            {
+                "fecha": "2026-08-30 17:10",
+                "tipo": "Salida",
+                "cantidad": 6,
+                "responsable": "Ana Torres (Logística)",
+                "glosa": "Despacho a sucursales de región"
+            }
+        ]
+    },
+    {
+        "codigo": "BAS-EBS-006",
+        "nombre": "Bajo Eléctrico Marcus Miller V7 Vintage 4st",
+        "categoria": "Guitarras",
+        "stock_actual": 2,
+        "stock_minimo": 3,
+        "pasillo": "Pasillo A",
+        "estante": "Estante 3 - Nivel 1",
+        "precio": 679990,
+        "movimientos": [
+            {
+                "fecha": "2026-08-10 11:00",
+                "tipo": "Ingreso",
+                "cantidad": 5,
+                "responsable": "Carlos Mendoza (Jefe de Bodega)",
+                "glosa": "Stock de bajosSire Marcus Miller"
+            },
+            {
+                "fecha": "2026-09-02 09:30",
+                "tipo": "Salida",
+                "cantidad": 3,
+                "responsable": "Felipe Rivas (Operador)",
+                "glosa": "Venta corporativa cliente vip"
+            }
+        ]
+    }
+]

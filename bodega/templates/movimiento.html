@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Movimiento de Inventario{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- BREADCRUMB -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-decoration-none text-muted">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'inventario' %}" class="text-decoration-none text-muted">Inventario</a></li>
+                <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">Nuevo Movimiento</li>
+            </ol>
+        </nav>
+
+        <div class="card card-custom p-4 shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                    <div class="bg-danger bg-opacity-10 text-danger p-3 rounded-circle fs-3">
+                        <i class="bi bi-arrow-down-up"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-extrabold text-dark mb-1">Registrar Movimiento de Mercadería</h3>
+                        <p class="text-secondary mb-0">Formulario administrativo para actualizar entradas y salidas de bodega central.</p>
+                    </div>
+                </div>
+
+                <!-- FORMULARIO POST CON CSRF TOKEN -->
+                <form method="POST" action="{% url 'movimiento_nuevo' %}" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <!-- SELECCIÓN DE PRODUCTO -->
+                    <div class="mb-4">
+                        <label for="codigo" class="form-label fw-bold text-dark">
+                            <i class="bi bi-box-seam me-1 text-danger"></i> Producto de Inventario <span class="text-danger">*</span>
+                        </label>
+                        <select name="codigo" id="codigo" class="form-select form-select-lg" required>
+                            <option value="">-- Seleccionar Instrumento / Equipo --</option>
+                            {% for p in inventario %}
+                                <option value="{{ p.codigo }}" {% if p.codigo == codigo_preseleccionado or p.codigo == form_data.codigo %}selected{% endif %}>
+                                    [{{ p.codigo }}] {{ p.nombre }} — (Stock Actual: {{ p.stock_actual }} un.)
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Seleccione el ítem al cual se le imputará la entrada o salida física.</div>
+                    </div>
+
+                    <!-- TIPO DE MOVIMIENTO (RADIO BUTTONS) -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark d-block">
+                            <i class="bi bi-arrow-left-right me-1 text-danger"></i> Tipo de Movimiento <span class="text-danger">*</span>
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="tipo" id="tipo_ingreso" value="Ingreso" {% if form_data.tipo == 'Ingreso' or not form_data.tipo %}checked{% endif %}>
+                                <label class="btn btn-outline-success w-100 py-3 fw-bold border-2 d-flex align-items-center justify-content-center gap-2" for="tipo_ingreso">
+                                    <i class="bi bi-arrow-down-left fs-4"></i>
+                                    <div>
+                                        <div>INGRESO / ENTRADA</div>
+                                        <small class="fw-normal d-block opacity-75">Suma stock disponible</small>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="tipo" id="tipo_salida" value="Salida" {% if form_data.tipo == 'Salida' %}checked{% endif %}>
+                                <label class="btn btn-outline-danger w-100 py-3 fw-bold border-2 d-flex align-items-center justify-content-center gap-2" for="tipo_salida">
+                                    <i class="bi bi-arrow-up-right fs-4"></i>
+                                    <div>
+                                        <div>SALIDA / DESPACHO</div>
+                                        <small class="fw-normal d-block opacity-75">Resta stock disponible</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CANTIDAD -->
+                    <div class="mb-4">
+                        <label for="cantidad" class="form-label fw-bold text-dark">
+                            <i class="bi bi-hash me-1 text-danger"></i> Cantidad de Unidades <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" min="1" name="cantidad" id="cantidad" class="form-control form-control-lg" placeholder="ej. 5" value="{{ form_data.cantidad }}" required>
+                        <div class="form-text">Debe ser un número entero estrictamente mayor a 0. Para salidas, no puede superar el stock actual.</div>
+                    </div>
+
+                    <!-- RESPONSABLE -->
+                    <div class="mb-4">
+                        <label for="responsable" class="form-label fw-bold text-dark">
+                            <i class="bi bi-person me-1 text-danger"></i> Encargado / Responsable
+                        </label>
+                        <input type="text" name="responsable" id="responsable" class="form-control" placeholder="ej. Carlos Mendoza (Jefe de Bodega)" value="{{ form_data.responsable }}">
+                    </div>
+
+                    <!-- GLOSA O OBSERVACIÓN -->
+                    <div class="mb-4">
+                        <label for="glosa" class="form-label fw-bold text-dark">
+                            <i class="bi bi-chat-left-text me-1 text-danger"></i> Glosa / Motivo del Movimiento
+                        </label>
+                        <textarea name="glosa" id="glosa" rows="3" class="form-control" placeholder="ej. Recepción de lote importación #INV-2026 o Despacho a Sucursal Providencia...">{{ form_data.glosa }}</textarea>
+                    </div>
+
+                    <!-- BOTONES DE ACCIÓN -->
+                    <div class="d-flex align-items-center justify-content-end gap-3 border-top pt-4">
+                        <a href="{% url 'inventario' %}" class="btn btn-outline-secondary px-4 fw-semibold">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg px-5 fw-bold shadow-sm">
+                            <i class="bi bi-check-circle-fill me-2"></i> Confirmar y Registrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
