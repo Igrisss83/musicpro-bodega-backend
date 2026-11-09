@@ -51,7 +51,7 @@
         .nav-link {
             color: #94a3b8 !important;
             font-weight: 500;
-            padding: 0.5rem 1rem !important;
+            padding: 0.5rem 0.85rem !important;
             border-radius: 0.5rem;
             transition: all 0.2s ease;
         }
@@ -107,7 +107,7 @@
 
     <!-- NAVBAR NAVEGACIÓN -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-mp sticky-top py-2">
-        <div class="container">
+        <div class="container-fluid px-lg-4">
             <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'index' %}">
                 <i class="bi bi-box-seam-fill text-danger fs-4"></i>
                 <span>MUSIC PRO</span> <small class="fw-normal text-muted fs-6">| Bodega Central</small>
@@ -118,7 +118,7 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarMain">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" href="{% url 'index' %}">
                             <i class="bi bi-house-door"></i> Inicio
@@ -130,35 +130,63 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'inventario' or request.resolver_match.url_name == 'detalle' %}active{% endif %}" href="{% url 'inventario' %}">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'inventario' or request.resolver_match.url_name == 'detalle' or request.resolver_match.url_name == 'inventario_lista' or request.resolver_match.url_name == 'detalle_producto' %}active{% endif %}" href="{% url 'inventario' %}">
                             <i class="bi bi-boxes"></i> Inventario
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'movimiento_nuevo' %}active{% endif %}" href="{% url 'movimiento_nuevo' %}">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'lista_solicitudes' %}active{% endif %}" href="{% url 'lista_solicitudes' %}">
+                            <i class="bi bi-send-check"></i> Solicitudes Sucursales
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'reportes_panel' %}active{% endif %}" href="{% url 'reportes_panel' %}">
+                            <i class="bi bi-bar-chart-line"></i> Reportes (KPIs)
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'movimiento_nuevo' or request.resolver_match.url_name == 'nuevo_movimiento' %}active{% endif %}" href="{% url 'movimiento_nuevo' %}">
                             <i class="bi bi-arrow-down-up"></i> Nuevo Movimiento
                         </a>
                     </li>
                 </ul>
 
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-danger bg-opacity-20 text-danger border border-danger-subtle px-3 py-2 rounded-pill">
-                        <i class="bi bi-music-note-beamed me-1"></i> Music Pro Tour 2026
-                    </span>
+                <!-- SECCIÓN DE AUTENTICACIÓN / USUARIO -->
+                <div class="d-flex align-items-center gap-3">
+                    {% if user.is_authenticated %}
+                        <div class="d-flex align-items-center text-light bg-dark bg-opacity-50 px-3 py-1 rounded-pill border border-secondary border-opacity-50">
+                            <i class="bi bi-person-circle text-danger me-2 fs-5"></i>
+                            <div class="lh-sm text-start me-3">
+                                <span class="d-block fw-bold text-white small">{{ user.username }}</span>
+                                <small class="text-white-50" style="font-size: 0.72rem;">
+                                    {% if user.is_superuser %}Superadmin{% else %}Operador{% endif %}
+                                </small>
+                            </div>
+                            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger py-1 px-2 rounded-pill" title="Cerrar Sesión">
+                                <i class="bi bi-box-arrow-right"></i> Salir
+                            </a>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-danger btn-sm px-3 fw-bold rounded-pill">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- MENSAJES DE SYSTEMA (DJANGO MESSAGES) -->
-    <div class="container mt-3">
+    <!-- MENSAJES DE SISTEMA (DJANGO MESSAGES) -->
+    <div class="container-fluid px-lg-4 mt-3">
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2" role="alert">
                     {% if message.tags == 'error' %}
-                        <i class="bi bi-exclamation-octagon-fill fs-5 text-danger"></i>
+                        <i class="bi bi-exclamation-octagon-fill fs-5 text-danger flex-shrink-0"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0"></i>
                     {% else %}
-                        <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+                        <i class="bi bi-check-circle-fill fs-5 text-success flex-shrink-0"></i>
                     {% endif %}
                     <div>{{ message }}</div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -168,7 +196,7 @@
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="container my-4">
+    <main class="container-fluid px-lg-4 my-4">
         {% block content %}{% endblock %}
     </main>
 
@@ -176,7 +204,7 @@
     <footer class="py-4 text-center">
         <div class="container">
             <p class="mb-1 text-white-50 fw-semibold">Music Pro S.A. — Sistema de Bodega Central y Distribución</p>
-            <p class="mb-0 small text-muted">Evaluación 1 | Programación Backend (INACAP) — Prototipo Funcional Django</p>
+            <p class="mb-0 small text-muted">Evaluación N°3 | Tecnologías del Lado del Servidor (INACAP) — Arquitectura Django & ORM</p>
         </div>
     </footer>
 

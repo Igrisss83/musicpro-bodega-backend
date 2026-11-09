@@ -52,23 +52,33 @@
                             <i class="bi bi-arrow-left-right me-1 text-danger"></i> Tipo de Movimiento <span class="text-danger">*</span>
                         </label>
                         <div class="row g-3">
-                            <div class="col-6">
+                            <div class="col-md-4">
                                 <input type="radio" class="btn-check" name="tipo" id="tipo_ingreso" value="Ingreso" {% if form_data.tipo == 'Ingreso' or not form_data.tipo %}checked{% endif %}>
                                 <label class="btn btn-outline-success w-100 py-3 fw-bold border-2 d-flex align-items-center justify-content-center gap-2" for="tipo_ingreso">
                                     <i class="bi bi-arrow-down-left fs-4"></i>
                                     <div>
-                                        <div>INGRESO / ENTRADA</div>
-                                        <small class="fw-normal d-block opacity-75">Suma stock disponible</small>
+                                        <div>ENTRADA</div>
+                                        <small class="fw-normal d-block opacity-75">Suma stock</small>
                                     </div>
                                 </label>
                             </div>
-                            <div class="col-6">
+                            <div class="col-md-4">
                                 <input type="radio" class="btn-check" name="tipo" id="tipo_salida" value="Salida" {% if form_data.tipo == 'Salida' %}checked{% endif %}>
                                 <label class="btn btn-outline-danger w-100 py-3 fw-bold border-2 d-flex align-items-center justify-content-center gap-2" for="tipo_salida">
                                     <i class="bi bi-arrow-up-right fs-4"></i>
                                     <div>
-                                        <div>SALIDA / DESPACHO</div>
-                                        <small class="fw-normal d-block opacity-75">Resta stock disponible</small>
+                                        <div>SALIDA</div>
+                                        <small class="fw-normal d-block opacity-75">Resta stock</small>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="radio" class="btn-check" name="tipo" id="tipo_ajuste" value="Ajuste" {% if form_data.tipo == 'Ajuste' %}checked{% endif %}>
+                                <label class="btn btn-outline-warning text-dark w-100 py-3 fw-bold border-2 d-flex align-items-center justify-content-center gap-2" for="tipo_ajuste">
+                                    <i class="bi bi-sliders fs-4"></i>
+                                    <div>
+                                        <div>AJUSTE</div>
+                                        <small class="fw-normal d-block opacity-75">Ajuste de inventario</small>
                                     </div>
                                 </label>
                             </div>

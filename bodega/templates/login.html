@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión | Music Pro Bodega{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-custom shadow-lg border-0 overflow-hidden">
+            <div class="bg-dark text-white p-4 text-center border-bottom border-danger border-3">
+                <div class="bg-danger bg-opacity-20 text-danger p-3 rounded-circle d-inline-flex mb-3">
+                    <i class="bi bi-shield-lock-fill fs-2"></i>
+                </div>
+                <h3 class="fw-bold text-white mb-1">Acceso Administrativo</h3>
+                <p class="text-light opacity-75 small mb-0">Bodega Central — Music Pro S.A.</p>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label fw-bold small text-secondary">
+                            <i class="bi bi-person me-1 text-danger"></i> Usuario
+                        </label>
+                        <input type="text" name="username" id="id_username" class="form-control form-control-lg" placeholder="ej. admin" required autofocus>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="id_password" class="form-label fw-bold small text-secondary">
+                            <i class="bi bi-key me-1 text-danger"></i> Contraseña
+                        </label>
+                        <input type="password" name="password" id="id_password" class="form-control form-control-lg" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold shadow-sm py-3">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Ingresar al Sistema
+                    </button>
+                </form>
+
+                <div class="mt-4 p-3 bg-light rounded-3 border text-center">
+                    <small class="text-muted d-block fw-semibold mb-1">
+                        <i class="bi bi-info-circle-fill text-primary me-1"></i> Credenciales de Evaluación INACAP
+                    </small>
+                    <code class="text-dark fw-bold">admin / admin123</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

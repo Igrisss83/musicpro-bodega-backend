@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+{% block title %}Solicitudes de Sucursales | Music Pro Bodega{% endblock %}
+
+{% block content %}
+<!-- HEADER Y CONTROLES -->
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 pb-2 border-bottom">
+    <div>
+        <h2 class="fw-extrabold text-dark mb-1">
+            <i class="bi bi-send-check text-danger me-2"></i>Solicitudes de Productos por Sucursales
+        </h2>
+        <p class="text-secondary mb-0">Gestión de abastecimiento, aprobación con control de stock y despacho hacia sucursales.</p>
+    </div>
+    <div class="mt-3 mt-md-0 d-flex gap-2">
+        <button type="button" class="btn btn-danger fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevaSolicitud">
+            <i class="bi bi-plus-circle me-1"></i> Emitir Nueva Solicitud
+        </button>
+        <a href="{% url 'reportes_panel' %}" class="btn btn-outline-secondary fw-semibold">
+            <i class="bi bi-bar-chart me-1"></i> Ver Métricas
+        </a>
+    </div>
+</div>
+
+<!-- BARRA DE FILTROS -->
+<div class="card card-custom p-3 mb-4">
+    <form method="GET" action="{% url 'lista_solicitudes' %}" class="row g-3 align-items-center">
+        <!-- Filtro por Estado -->
+        <div class="col-md-4">
+            <label for="estado" class="form-label small fw-bold text-muted mb-1">Filtrar por Estado</label>
+            <select name="estado" id="estado" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Todos los Estados --</option>
+                {% for code, label in estados %}
+                    <option value="{{ code }}" {% if code == estado_filtro %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Filtro por Sucursal -->
+        <div class="col-md-5">
+            <label for="sucursal" class="form-label small fw-bold text-muted mb-1">Filtrar por Sucursal</label>
+            <select name="sucursal" id="sucursal" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Todas las Sucursales --</option>
+                {% for suc in sucursales %}
+                    <option value="{{ suc.id }}" {% if suc.id|stringformat:"s" == sucursal_filtro %}selected{% endif %}>{{ suc.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Botón Limpiar Filtros -->
+        <div class="col-md-3 d-flex gap-2 align-self-end">
+            <button type="submit" class="btn btn-dark w-100 fw-bold">
+                <i class="bi bi-funnel-fill"></i> Filtrar
+            </button>
+            {% if estado_filtro or sucursal_filtro %}
+                <a href="{% url 'lista_solicitudes' %}" class="btn btn-outline-secondary" title="Limpiar Filtros">
+                    <i class="bi bi-x-circle-fill"></i>
+                </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- LISTADO DE SOLICITUDES -->
+{% if solicitudes %}
+    <div class="row g-4">
+        {% for sol in solicitudes %}
+        <div class="col-12">
+            <div class="card card-custom overflow-hidden border-start border-4 {% if sol.estado == 'PENDIENTE' %}border-warning{% elif sol.estado == 'APROBADA' %}border-success{% elif sol.estado == 'DESPACHADA' %}border-primary{% else %}border-danger{% endif %}">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 pb-3 border-bottom">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge bg-dark font-monospace fs-6">#{{ sol.id }}</span>
+                                <h4 class="fw-bold text-dark mb-0">{{ sol.sucursal.nombre }}</h4>
+                                <small class="text-muted">({{ sol.sucursal.codigo }})</small>
+                            </div>
+                            <div class="small text-secondary">
+                                <i class="bi bi-geo-alt me-1 text-danger"></i>{{ sol.sucursal.direccion }}
+                                <span class="mx-2">•</span>
+                                <i class="bi bi-person me-1"></i>Solicitado por: <strong>{{ sol.usuario_solicitante.username }}</strong>
+                                <span class="mx-2">•</span>
+                                <i class="bi bi-clock-history me-1"></i>{{ sol.fecha_solicitud|date:"d/m/Y H:i" }}
+                            </div>
+                        </div>
+
+                        <!-- BADGE DE ESTADO -->
+                        <div class="text-md-end">
+                            {% if sol.estado == 'PENDIENTE' %}
+                                <span class="badge bg-warning text-dark px-3 py-2 fs-6">
+                                    <i class="bi bi-hourglass-split me-1"></i> PENDIENTE DE REVISIÓN
+                                </span>
+                            {% elif sol.estado == 'APROBADA' %}
+                                <span class="badge bg-success px-3 py-2 fs-6">
+                                    <i class="bi bi-check-circle-fill me-1"></i> APROBADA (Stock Asignado)
+                                </span>
+                            {% elif sol.estado == 'DESPACHADA' %}
+                                <span class="badge bg-primary px-3 py-2 fs-6">
+                                    <i class="bi bi-truck me-1"></i> DESPACHADA A DESTINO
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger px-3 py-2 fs-6">
+                                    <i class="bi bi-x-circle-fill me-1"></i> RECHAZADA
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- OBSERVACIONES -->
+                    {% if sol.observaciones %}
+                        <div class="p-2 mb-3 bg-light rounded-3 text-secondary small">
+                            <strong><i class="bi bi-chat-left-quote me-1"></i> Observación:</strong> {{ sol.observaciones }}
+                        </div>
+                    {% endif %}
+
+                    <!-- TABLA DETALLE DE PRODUCTOS SOLICITADOS -->
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Producto / Equipo</th>
+                                    <th class="text-center">Cant. Solicitada</th>
+                                    <th class="text-center">Stock Central Actual</th>
+                                    <th class="text-center">Disponibilidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in sol.detalles_enriquecidos %}
+                                <tr>
+                                    <td class="font-monospace fw-bold text-secondary">{{ item.detalle.producto.sku }}</td>
+                                    <td>
+                                        <a href="{% url 'detalle' item.detalle.producto.sku %}" class="text-decoration-none text-dark fw-semibold hover-danger">
+                                            {{ item.detalle.producto.nombre }}
+                                        </a>
+                                        <small class="text-muted d-block">{{ item.detalle.producto.categoria.nombre }}</small>
+                                    </td>
+                                    <td class="text-center fw-bold fs-6">{{ item.detalle.cantidad_solicitada }} un.</td>
+                                    <td class="text-center fw-bold">{{ item.stock_actual }} un.</td>
+                                    <td class="text-center">
+                                        {% if item.suficiente %}
+                                            <span class="badge bg-success bg-opacity-15 text-success border border-success px-2 py-1">
+                                                <i class="bi bi-check-lg me-1"></i> Stock Suficiente
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger bg-opacity-15 text-danger border border-danger px-2 py-1">
+                                                <i class="bi bi-exclamation-octagon me-1"></i> Quiebre de Stock
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- BOTONES DE GESTIÓN Y ACCIONES -->
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-2 border-top">
+                        <div class="small text-muted">
+                            Total ítems: <strong>{{ sol.detalles_enriquecidos|length }} producto(s)</strong>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            {% if sol.estado == 'PENDIENTE' %}
+                                {% if sol.puede_aprobar %}
+                                    <a href="{% url 'procesar_solicitud' sol.id 'aprobar' %}" 
+                                       class="btn btn-success btn-sm fw-bold px-3"
+                                       onclick="return confirm('¿Confirma que desea APROBAR la solicitud #{{ sol.id }}? Esto generará automáticamente los movimientos de SALIDA de inventario.');">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Aprobar y Descontar Stock
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-outline-secondary btn-sm" disabled title="No hay stock suficiente en Bodega Central">
+                                        <i class="bi bi-shield-x me-1"></i> Sin Stock para Aprobar
+                                    </button>
+                                {% endif %}
+                                <a href="{% url 'procesar_solicitud' sol.id 'rechazar' %}" 
+                                   class="btn btn-outline-danger btn-sm fw-semibold px-3"
+                                   onclick="return confirm('¿Está seguro de que desea RECHAZAR la solicitud #{{ sol.id }}?');">
+                                    <i class="bi bi-x-circle me-1"></i> Rechazar
+                                </a>
+                            {% elif sol.estado == 'APROBADA' %}
+                                <a href="{% url 'procesar_solicitud' sol.id 'despachar' %}" 
+                                   class="btn btn-primary btn-sm fw-bold px-3"
+                                   onclick="return confirm('¿Confirma el despacho físico de la solicitud #{{ sol.id }} hacia {{ sol.sucursal.nombre }}?');">
+                                    <i class="bi bi-truck me-1"></i> Marcar como Despachada
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card card-custom p-5 text-center">
+        <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+        <h4 class="fw-bold text-dark">No se encontraron solicitudes</h4>
+        <p class="text-secondary mb-3">No hay solicitudes registradas que coincidan con los filtros aplicados.</p>
+        <div>
+            <button type="button" class="btn btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevaSolicitud">
+                <i class="bi bi-plus-circle me-1"></i> Crear Primera Solicitud
+            </button>
+        </div>
+    </div>
+{% endif %}
+
+<!-- MODAL PARA NUEVA SOLICITUD -->
+<div class="modal fade" id="modalNuevaSolicitud" tabindex="-1" aria-labelledby="modalNuevaSolicitudLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white border-bottom border-danger border-2">
+                <h5 class="modal-title fw-bold" id="modalNuevaSolicitudLabel">
+                    <i class="bi bi-send-plus text-danger me-2"></i>Emitir Solicitud desde Sucursal
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'lista_solicitudes' %}">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="crear_solicitud">
+
+                <div class="modal-body p-4">
+                    <!-- SUCURSAL -->
+                    <div class="mb-3">
+                        <label for="sucursal_id" class="form-label fw-bold text-dark">
+                            <i class="bi bi-shop me-1 text-danger"></i> Sucursal Emisora <span class="text-danger">*</span>
+                        </label>
+                        <select name="sucursal_id" id="sucursal_id" class="form-select" required>
+                            <option value="">-- Seleccione Sucursal --</option>
+                            {% for suc in sucursales %}
+                                <option value="{{ suc.id }}">{{ suc.nombre }} ({{ suc.codigo }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- PRODUCTO -->
+                    <div class="mb-3">
+                        <label for="producto_id" class="form-label fw-bold text-dark">
+                            <i class="bi bi-box-seam me-1 text-danger"></i> Producto a Solicitar <span class="text-danger">*</span>
+                        </label>
+                        <select name="producto_id" id="producto_id" class="form-select" required>
+                            <option value="">-- Seleccione Instrumento / Equipo --</option>
+                            {% for p in productos %}
+                                <option value="{{ p.id }}">[{{ p.sku }}] {{ p.nombre }} — ({{ p.categoria.nombre }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- CANTIDAD -->
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label fw-bold text-dark">
+                            <i class="bi bi-hash me-1 text-danger"></i> Cantidad de Unidades Requeridas <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" min="1" max="1000" name="cantidad" id="cantidad" class="form-control" value="1" required>
+                    </div>
+
+                    <!-- OBSERVACIONES -->
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label fw-bold text-dark">
+                            <i class="bi bi-chat-left-text me-1 text-danger"></i> Justificación u Observaciones
+                        </label>
+                        <textarea name="observaciones" id="observaciones" rows="3" class="form-control" placeholder="ej. Reabastecimiento urgente de cara al fin de semana..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger fw-bold px-4">
+                        <i class="bi bi-send-fill me-1"></i> Enviar Solicitud a Bodega Central
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,36 +1,70 @@
 # 🎸 Bodega Central - Music Pro S.A.
-> **Evaluación 1** | Asignatura de Desarrollo Web / Arquitectura de Software  
-> **Profesor:** Benjamín Mora  
+> **Evaluación N°3** | Tecnologías del Lado del Servidor / Arquitectura Web  
+> **Institución:** INACAP  
 
 ---
 
 ## 📋 Descripción y Alcance del Proyecto
 
-**Music Pro S.A.** es una empresa especializada en la distribución e importación de instrumentos musicales, equipos de audio e iluminación profesional. El módulo **Bodega Central** corresponde al sistema web administrativo desarrollado con el framework **Django**, diseñado para optimizar el control de inventario, la trazabilidad de insumos y la gestión operativa de entradas y salidas de mercadería.
-
-### 🚀 Funcionalidades Clave
-- **Dashboard Administrativo (KPIs):** Panel de control con métricas clave en tiempo real: total de productos, unidades físicas almacenadas, alertas de stock crítico e historial de los últimos movimientos.
-- **Catálogo de Inventario:** Listado completo con filtros combinables por categoría, estado operativo (*Óptimo*, *Stock Crítico*, *Agotado*) y campo de búsqueda en tiempo real por código o nombre de producto.
-- **Ficha Técnica & Trazabilidad ("Modo Show"):** Vista detallada por producto que expone especificaciones técnicas, ubicación física en bodega y la trazabilidad histórica de todas sus entradas y salidas.
-- **Gestión de Movimientos:** Formulario operativo para registrar **Ingresos** y **Salidas** de stock con validaciones estrictas en el servidor para evitar descuadres de inventario.
+**Music Pro S.A.** es una empresa especializada en la distribución e importación de instrumentos musicales, equipos de audio e iluminación profesional. El módulo **Bodega Central** corresponde al backend administrativo integral desarrollado con **Django** y **Python**, diseñado para la administración centralizada de inventario físico, trazabilidad mediante Kardex ORM, atención y flujo de aprobación de **Solicitudes de Sucursales**, control de **Proveedores** y un **Módulo de Reportes con 20 indicadores analíticos**.
 
 ---
 
-## 🤖 Justificación del Uso de Inteligencia Artificial (Criterio 1.1.4)
+### 🚀 Funcionalidades Principales Implementadas
 
-En conformidad con las pautas de evaluación y el **Criterio 1.1.4**, el desarrollo de esta solución integró el apoyo asistido de herramientas de **Inteligencia Artificial Generativa / Agentic Coding (Antigravity AI)** como par de programación (*Pair Programming*).
+1. **Capa de Modelos ORM Relacional:**
+   - `Categoria`: Clasificación de equipamiento.
+   - `Proveedor`: Proveedores con RUT chileno, razón social y contacto.
+   - `Bodega`: Bodega Central y centros logísticos.
+   - `Sucursal`: Red de sucursales activas e inactivas.
+   - `Producto`: Catálogo con SKU único, FK a categoría y proveedor, precio CLP, stock mínimo y estado activo.
+   - `Solicitud`: Requerimientos emitidos por sucursales a Bodega Central con estados `PENDIENTE`, `APROBADA`, `RECHAZADA`, `DESPACHADA`.
+   - `DetalleSolicitud`: Ítems y cantidades solicitadas vinculadas a la solicitud y producto (`related_name='detalles'`).
+   - `Movimiento`: Kardex de inventario (`ENTRADA`, `SALIDA`, `AJUSTE`) con `related_name='movimientos'`.
 
-### 🛠️ Áreas de Aplicación de la IA en el Proyecto:
-1. **Modelamiento de Capa de Datos Mock (JSON Driven):**
-   - Asistencia en la estructuración del esquema JSON (`bodega/data/inventario.json`) y la implementación de utilidades Python (`cargar_inventario`, `guardar_inventario`) para garantizar la persistencia de datos y manipulación en memoria sin necesidad de ORM relacional complejo en esta etapa.
-2. **Lógica de Negocio y Controladores en Python (`views.py`):**
-   - Co-diseño del algoritmo de enriquecimiento dinámico (`enriquecer_producto`), el cual calcula estados de alerta y asigna badges de Bootstrap de manera reactiva según reglas de stock mínimo.
-   - Reforzamiento de las validaciones de negocio en el backend (verificación de tipo de movimiento, validación de enteros positivos y prevención de salidas que excedan el stock disponible).
-3. **Optimización de UI/UX con Bootstrap 5 y Django Template Language (DTL):**
-   - Generación modular de plantillas HTML5 (`base.html`, `dashboard.html`, `inventario.html`, `detalle.html`, `movimiento.html`) garantizando diseño *responsive*, estética profesional (*dark/light contrast*, componentes visuales limpios) y manejo centralizado de alertas (`django.contrib.messages`).
+2. **Autenticación y Seguridad:**
+   - Vistas independientes `login_view` y `logout_view` basadas en `django.contrib.auth`.
+   - Protección de todas las vistas administrativas mediante `@login_required`.
+   - Superusuario preconfigurado: `admin` / `admin123`.
 
-### 📌 Declaración de Integridad y Co-Pilotaje Técnico:
-El uso de la IA actuó exclusivamente como un acelerador de prototipado y soporte de buenas prácticas de código. La supervisión técnica, decisiones de arquitectura modular, enrutamiento de Django y verificación de requisitos fueron guiadas por el alumno para cumplir rigurosamente con los objetivos pedagógicos planteados por el docente.
+3. **Cálculo de Stock Dinámico en Tiempo Real:**
+   - Función auxiliar `enriquecer_producto(prod)` con agregaciones ORM (`Sum`, `Case`, `When`, `Coalesce`) para calcular el stock exacto:
+     $$\text{Stock Actual} = \sum \text{ENTRADA} + \sum \text{AJUSTE} - \sum \text{SALIDA}$$
+   - Determinación automática de alertas: *Óptimo*, *Stock Crítico* y *Agotado*.
+
+4. **Flujo de Solicitudes y Control de Despachos:**
+   - Vista `lista_solicitudes` con filtros por estado y sucursal, visualización de stock disponible en bodega central y modal para emitir solicitudes.
+   - Vista `procesar_solicitud`:
+     - **Aprobar:** Valida atómicamente la disponibilidad de stock de todos los ítems. Si hay quiebre, rechaza la operación informando los productos faltantes. Si hay stock suficiente, cambia el estado a `APROBADA` y genera automáticamente los registros de `Movimiento` tipo `SALIDA`.
+     - **Rechazar:** Cambia el estado a `RECHAZADA`.
+     - **Despachar:** Marca la solicitud aprobada como `DESPACHADA`.
+
+5. **Módulo de Reportes y Analítica (20 Indicadores ORM):**
+   - Panel ejecutivo (`reportes_panel`) con 20 consultas ORM optimizadas:
+     1. Productos con stock bajo el mínimo exigido.
+     2. Top 10 productos más caros.
+     3. Distribución y conteo de productos por categoría.
+     4. Conteo de solicitudes por estado (Pendientes, Aprobadas, etc.).
+     5. Top 5 sucursales con mayor cantidad de solicitudes.
+     6. Top 5 productos más solicitados por las sucursales.
+     7. Valor monetario total del inventario en bodega (CLP).
+     8. Total de unidades despachadas (salidas) en los últimos 30 días.
+     9. Total de unidades ingresadas (entradas) en los últimos 30 días.
+     10. Top 5 proveedores con más productos en catálogo.
+     11. Conteo y detalle de productos agotados (Stock = 0).
+     12. Conteo de productos en nivel óptimo de inventario.
+     13. Precio promedio de productos por categoría.
+     14. Total de unidades físicas almacenadas en Bodega Central.
+     15. Movimientos históricos clasificados por tipo (`ENTRADA`, `SALIDA`, `AJUSTE`).
+     16. Top 5 productos con mayor rotación / salidas de bodega.
+     17. Top usuarios con más solicitudes generadas.
+     18. Tasa porcentual de aprobación de solicitudes.
+     19. Relación de sucursales activas vs en remodelación/inactivas.
+     20. Trazabilidad de las últimas 10 solicitudes registradas.
+
+6. **Poblado Masivo y Pruebas de Carga (`seed_data`):**
+   - Comando `python manage.py seed_data [cantidad]` con `Faker('es_CL')`.
+   - Inserción por lotes usando `bulk_create()` y `transaction.atomic()` a tasas de más de 9.000 registros por segundo.
 
 ---
 
@@ -38,71 +72,44 @@ El uso de la IA actuó exclusivamente como un acelerador de prototipado y soport
 
 | Ruta URL | Nombre (Django Name) | Método | Descripción del Componente |
 | :--- | :--- | :---: | :--- |
-| `/` | `index` | `GET` | Landing pública de presentación de la Bodega Central. |
-| `/admin-panel/dashboard/` | `dashboard` | `GET` | Panel de métricas KPI, alertas críticas y últimos movimientos. |
-| `/admin-panel/inventario/` | `inventario` | `GET` | Catálogo de productos con filtros por categoría, estado y búsqueda. |
-| `/admin-panel/producto/<codigo>/` | `detalle` | `GET` | Ficha técnica ("Modo Show") y trazabilidad histórica del producto. |
-| `/admin-panel/movimientos/nuevo/` | `movimiento_nuevo` | `GET / POST` | Formulario de registro e inserción de entradas y salidas de stock. |
+| `/` | `index` | `GET` | Landing pública de presentación institucional. |
+| `/login/` | `login` | `GET / POST` | Inicio de sesión con autenticación Django. |
+| `/logout/` | `logout` | `GET` | Cierre de sesión y redirección. |
+| `/admin-panel/dashboard/` | `dashboard` | `GET` | Panel de métricas KPI, alertas y accesos rápidos. |
+| `/admin-panel/inventario/` | `inventario` | `GET` | Catálogo de productos con filtros y búsqueda. |
+| `/admin-panel/producto/<codigo>/` | `detalle` | `GET` | Ficha técnica y trazabilidad histórica del producto. |
+| `/admin-panel/movimientos/nuevo/` | `movimiento_nuevo` | `GET / POST` | Formulario de registro de entradas, salidas y ajustes. |
+| `/admin-panel/solicitudes/` | `lista_solicitudes` | `GET / POST` | Listado, creación y monitoreo de solicitudes de sucursales. |
+| `/admin-panel/solicitudes/<id>/<accion>/` | `procesar_solicitud` | `GET` | Controlador de aprobación, rechazo y despacho de solicitudes. |
+| `/admin-panel/reportes/` | `reportes_panel` | `GET` | Panel de 20 indicadores analíticos ORM. |
 
 ---
 
-## 🛠️ Requisitos e Instrucciones de Ejecución
+## 🛠️ Instrucciones de Ejecución
 
-### Prerrequisitos
-- **Python:** 3.10 o superior
-- **Django:** 5.0+
-
-### Pasos de Instalación y Despliegue Local
-
-1. **Clonar el repositorio:**
-   ```bash
-   git clone <URL_DE_TU_REPOSITORIO_GITHUB>
-   cd progra
-   ```
-
-2. **Crear y activar entorno virtual:**
-   ```bash
-   # En Windows (PowerShell):
-   python -m venv .venv
-   \.venv\Scripts\Activate.ps1
-
-   # En Linux/macOS:
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-
-3. **Instalar dependencias (Django):**
-   ```bash
-   pip install django
-   ```
-
-4. **Ejecutar el servidor de desarrollo:**
-   ```bash
-   python manage.py runserver
-   ```
-
-5. **Acceder a la aplicación:**
-   Abrir el navegador web en `http://127.0.0.1:8000/`.
-
----
-
-## 📁 Estructura del Proyecto
-
-```text
-progra/
-├── .gitignore               # Exclusión de entornos virtuales, pycache y SQLite
-├── README.md                # Documentación del proyecto (Criterio 1.1.4)
-├── manage.py                # Script principal de administración de Django
-├── config/                  # Configuración global del proyecto Django
-│   ├── __init__.py
-│   ├── settings.py          # Ajustes globales y registro de la app 'bodega'
-│   ├── urls.py              # Enrutador principal de URLs
-│   └── wsgi.py              # Interfaz WSGI para despliegue
-└── bodega/                  # Aplicación principal de la Bodega Central
-    ├── data/
-    │   └── inventario.json  # Base de datos mock en formato JSON
-    ├── static/              # Archivos estáticos de la aplicación
-    ├── templates/           # Plantillas DTL (base, index, dashboard, inventario, detalle, movimiento)
-    ├── urls.py              # Rutas modulares de la aplicación
-    └── views.py             # Controladores de vistas y validaciones de negocio
+### 1. Migraciones de Base de Datos
+```bash
+python manage.py makemigrations
+python manage.py migrate
 ```
+
+### 2. Poblar Datos Iniciales y Pruebas de Carga
+```bash
+# Poblar datos base + 500 movimientos masivos (por defecto)
+python manage.py seed_data 500
+
+# O generar pruebas de alta concurrencia / carga
+python manage.py seed_data 10000
+```
+
+### 3. Ejecutar Pruebas Automatizadas
+```bash
+python manage.py test
+```
+
+### 4. Iniciar Servidor de Desarrollo
+```bash
+python manage.py runserver
+```
+Acceder en el navegador a `http://127.0.0.1:8000/`.  
+**Credenciales:** Usuario: `admin` | Contraseña: `admin123`

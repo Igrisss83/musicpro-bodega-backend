@@ -1,0 +1,650 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Reportes y KPIs | Music Pro Bodega{% endblock %}
+
+{% block content %}
+<!-- HEADER DEL MÓDULO DE REPORTES -->
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 pb-2 border-bottom">
+    <div>
+        <h2 class="fw-extrabold text-dark mb-1">
+            <i class="bi bi-bar-chart-line-fill text-danger me-2"></i>Módulo de Reportes & Indicadores Estratégicos (KPIs)
+        </h2>
+        <p class="text-secondary mb-0">Consolidado de 20 indicadores analíticos calculados mediante consultas ORM agregadas en tiempo real.</p>
+    </div>
+    <div class="mt-3 mt-md-0 d-flex gap-2">
+        <a href="{% url 'inventario' %}" class="btn btn-outline-secondary fw-semibold">
+            <i class="bi bi-boxes me-1"></i> Inventario
+        </a>
+        <a href="{% url 'lista_solicitudes' %}" class="btn btn-danger fw-bold shadow-sm">
+            <i class="bi bi-send-check me-1"></i> Solicitudes Sucursales
+        </a>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- BLOQUE 1: CARDS DE RESUMEN EJECUTIVO / MACRO INDICADORES                 -->
+<!-- ======================================================================= -->
+<div class="row g-3 mb-4">
+    <!-- Indicador 7: Valor Total del Inventario -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-custom p-3 border-start border-4 border-success h-100">
+            <div class="card-body p-2">
+                <span class="text-uppercase text-muted fw-bold small">Indicador 7 • Valor Inventario</span>
+                <h3 class="fw-extrabold text-dark mb-1 mt-2">${{ ind7_valor_total_inventario|floatformat:0 }}</h3>
+                <small class="text-success fw-semibold"><i class="bi bi-cash-stack me-1"></i>Valorización Comercial Total</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador 14: Total Unidades Físicas -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-custom p-3 border-start border-4 border-primary h-100">
+            <div class="card-body p-2">
+                <span class="text-uppercase text-muted fw-bold small">Indicador 14 • Unidades en Bodega</span>
+                <h3 class="fw-extrabold text-dark mb-1 mt-2">{{ ind14_total_unidades_fisicas|default:0 }} <small class="fs-6 text-muted fw-normal">un.</small></h3>
+                <small class="text-primary fw-semibold"><i class="bi bi-layers-fill me-1"></i>Stock Físico Consolidado</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador 18: Tasa de Aprobación -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-custom p-3 border-start border-4 border-info h-100">
+            <div class="card-body p-2">
+                <span class="text-uppercase text-muted fw-bold small">Indicador 18 • Aprobación Solicitudes</span>
+                <h3 class="fw-extrabold text-dark mb-1 mt-2">{{ ind18_tasa_aprobacion }}%</h3>
+                <div class="progress mt-2" style="height: 6px;">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ ind18_tasa_aprobacion }}%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador 1: Stock Bajo Mínimo -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-custom p-3 border-start border-4 border-danger h-100">
+            <div class="card-body p-2">
+                <span class="text-uppercase text-muted fw-bold small">Indicador 1 • Alertas Críticas</span>
+                <h3 class="fw-extrabold text-danger mb-1 mt-2">{{ ind1_conteo }}</h3>
+                <small class="text-danger fw-semibold"><i class="bi bi-exclamation-triangle-fill me-1"></i>Stock &le; Mínimo Exigido</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- BLOQUE 2: CONTROL DE EXISTENCIAS Y SALUD DE INVENTARIO                  -->
+<!-- ======================================================================= -->
+<div class="row g-4 mb-4">
+    <!-- Indicador 1: Productos con stock bajo el mínimo -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-exclamation-octagon-fill text-danger me-2"></i>Indicador 1: Productos Bajo Stock Mínimo ({{ ind1_conteo }})
+                </h5>
+                <span class="badge bg-danger">Atención Requerida</span>
+            </div>
+            <div class="card-body p-0">
+                {% if ind1_productos_criticos %}
+                    <div class="table-responsive" style="max-height: 280px;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Producto</th>
+                                    <th class="text-center">Stock Actual</th>
+                                    <th class="text-center">Mínimo</th>
+                                    <th class="text-end">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in ind1_productos_criticos %}
+                                <tr>
+                                    <td class="font-monospace fw-bold text-secondary">{{ p.sku }}</td>
+                                    <td>
+                                        <a href="{% url 'detalle' p.sku %}" class="text-decoration-none text-dark fw-semibold">
+                                            {{ p.nombre }}
+                                        </a>
+                                    </td>
+                                    <td class="text-center fw-bold text-danger">{{ p.stock_actual }}</td>
+                                    <td class="text-center text-muted">{{ p.stock_minimo }}</td>
+                                    <td class="text-end">
+                                        <span class="badge {{ p.estado_badge }}">{{ p.estado_label }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-success">
+                        <i class="bi bi-check-circle-fill fs-2 d-block mb-1"></i>
+                        No hay productos bajo el stock mínimo en este momento.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicadores 11 y 12: Agotados vs Óptimos -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-pie-chart-fill text-primary me-2"></i>Indicadores 11 y 12: Estado de Disponibilidad de Catálogo
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 text-center mb-3">
+                    <div class="col-4">
+                        <div class="p-3 bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25">
+                            <span class="small text-muted fw-bold d-block">Indicador 12</span>
+                            <span class="fs-4 fw-extrabold text-success">{{ ind12_conteo }}</span>
+                            <small class="d-block text-success fw-semibold">Nivel Óptimo</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-warning bg-opacity-10 rounded-3 border border-warning border-opacity-25">
+                            <span class="small text-muted fw-bold d-block">En Alerta</span>
+                            <span class="fs-4 fw-extrabold text-warning text-dark">{{ ind1_conteo }}</span>
+                            <small class="d-block text-dark fw-semibold">Stock Crítico</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-danger bg-opacity-10 rounded-3 border border-danger border-opacity-25">
+                            <span class="small text-muted fw-bold d-block">Indicador 11</span>
+                            <span class="fs-4 fw-extrabold text-danger">{{ ind11_conteo }}</span>
+                            <small class="d-block text-danger fw-semibold">Agotados (Stock=0)</small>
+                        </div>
+                    </div>
+                </div>
+
+                {% if ind11_productos_agotados %}
+                    <h6 class="fw-bold text-danger small mb-2"><i class="bi bi-x-circle me-1"></i>Detalle de Productos Totalmente Agotados:</h6>
+                    <div class="list-group list-group-flush border rounded-3 overflow-hidden">
+                        {% for pa in ind11_productos_agotados %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                <span class="fw-semibold text-dark small">[{{ pa.sku }}] {{ pa.nombre }}</span>
+                                <span class="badge bg-danger">0 unidades</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-success small mb-0">
+                        <i class="bi bi-check-circle me-1"></i> Actualmente no hay productos totalmente desabastecidos (stock 0).
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- BLOQUE 3: PRECIOS, CATEGORÍAS Y PROVEEDORES                            -->
+<!-- ======================================================================= -->
+<div class="row g-4 mb-4">
+    <!-- Indicador 2: Top 10 productos más caros -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-trophy-fill text-warning me-2"></i>Indicador 2: Top 10 Productos Más Caros
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>SKU</th>
+                                <th>Instrumento / Equipo</th>
+                                <th>Categoría</th>
+                                <th class="text-end">Precio (CLP)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in ind2_top10_caros %}
+                            <tr>
+                                <td class="fw-bold text-muted">{{ forloop.counter }}</td>
+                                <td class="font-monospace small fw-bold">{{ p.sku }}</td>
+                                <td class="fw-semibold text-dark">{{ p.nombre }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ p.categoria.nombre }}</span></td>
+                                <td class="text-end fw-bold text-dark">${{ p.precio|floatformat:0 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador 3 e Indicador 13: Distribución y Precio Promedio por Categoría -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-tags-fill text-danger me-2"></i>Indicadores 3 y 13: Análisis por Categoría
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Categoría</th>
+                                <th class="text-center">Ind 3: Total Productos</th>
+                                <th class="text-end">Ind 13: Precio Promedio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in ind13_promedio_categoria %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ cat.nombre }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary px-2 py-1">{{ cat.productos.count }} ítems</span>
+                                </td>
+                                <td class="text-end fw-bold text-secondary">
+                                    ${{ cat.precio_promedio|floatformat:0 }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- BLOQUE 4: SOLICITUDES Y GESTIÓN DE SUCURSALES                           -->
+<!-- ======================================================================= -->
+<div class="row g-4 mb-4">
+    <!-- Indicador 4: Total de solicitudes por estado -->
+    <div class="col-md-4">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-clock-history text-secondary me-2"></i>Indicador 4: Solicitudes por Estado
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span><i class="bi bi-hourglass-split text-warning me-2"></i>Pendientes</span>
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">{{ ind4_resumen_estados.PENDIENTE }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span><i class="bi bi-check-circle-fill text-success me-2"></i>Aprobadas</span>
+                        <span class="badge bg-success px-3 py-2 fs-6">{{ ind4_resumen_estados.APROBADA }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span><i class="bi bi-truck text-primary me-2"></i>Despachadas</span>
+                        <span class="badge bg-primary px-3 py-2 fs-6">{{ ind4_resumen_estados.DESPACHADA }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span><i class="bi bi-x-circle-fill text-danger me-2"></i>Rechazadas</span>
+                        <span class="badge bg-danger px-3 py-2 fs-6">{{ ind4_resumen_estados.RECHAZADA }}</span>
+                    </li>
+                </ul>
+                <div class="mt-3 text-center small text-muted">
+                    Total Solicitudes Emitidas: <strong>{{ total_solicitudes }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador 5: Top 5 sucursales con más solicitudes -->
+    <div class="col-md-4">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-shop text-primary me-2"></i>Indicador 5: Top 5 Sucursales Activas
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sucursal</th>
+                                <th class="text-end">Solicitudes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for suc in ind5_top_sucursales %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ suc.nombre }}</div>
+                                    <small class="text-muted">{{ suc.codigo }}</small>
+                                </td>
+                                <td class="text-end fw-extrabold text-primary">
+                                    {{ suc.total_solicitudes }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted">Sin datos.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador 6: Top 5 productos más solicitados -->
+    <div class="col-md-4">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-star-fill text-warning me-2"></i>Indicador 6: Top 5 Más Solicitados
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-end">Unidades Requeridas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in ind6_top_solicitados %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ item.producto__nombre }}</div>
+                                    <small class="text-muted font-monospace">{{ item.producto__sku }}</small>
+                                </td>
+                                <td class="text-end fw-extrabold text-danger">
+                                    {{ item.total_unidades }} un.
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted">Sin solicitudes.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- BLOQUE 5: MOVIMIENTOS, ROTACIÓN Y PROVEEDORES                          -->
+<!-- ======================================================================= -->
+<div class="row g-4 mb-4">
+    <!-- Indicadores 8 y 9: Entradas y Salidas en los últimos 30 días -->
+    <div class="col-lg-4">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-calendar3 text-danger me-2"></i>Indicadores 8 y 9: Movimientos Último Mes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="p-3 bg-light rounded-3 mb-3 border">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold text-danger"><i class="bi bi-arrow-up-right me-1"></i>Ind 8: Salidas / Despachos</span>
+                        <span class="badge bg-danger">{{ ind8_salidas_mes.total_movimientos }} ops</span>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-0">{{ ind8_salidas_mes.total_unidades }} <small class="fs-6 text-muted fw-normal">unidades despachadas</small></h3>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 border">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold text-success"><i class="bi bi-arrow-down-left me-1"></i>Ind 9: Entradas / Ingresos</span>
+                        <span class="badge bg-success">{{ ind9_entradas_mes.total_movimientos }} ops</span>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-0">{{ ind9_entradas_mes.total_unidades }} <small class="fs-6 text-muted fw-normal">unidades recepcionadas</small></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador 10: Top 5 proveedores con más productos -->
+    <div class="col-lg-4">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-truck-front-fill text-info me-2"></i>Indicador 10: Top 5 Proveedores
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Proveedor</th>
+                                <th class="text-end">Productos Catálogo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prov in ind10_top_proveedores %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ prov.nombre }}</div>
+                                    <small class="text-muted">{{ prov.rut }}</small>
+                                </td>
+                                <td class="text-end fw-bold text-dark">{{ prov.total_productos }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted">Sin proveedores.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador 16: Top 5 productos con mayor rotación / salidas -->
+    <div class="col-lg-4">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-arrow-repeat text-success me-2"></i>Indicador 16: Mayor Rotación (Salidas)
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-end">Total Salidas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rot in ind16_top_rotacion %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ rot.producto__nombre }}</div>
+                                    <small class="text-muted font-monospace">{{ rot.producto__sku }}</small>
+                                </td>
+                                <td class="text-end fw-extrabold text-danger">{{ rot.total_salidas }} un.</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted">Sin salidas registradas.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- BLOQUE 6: OPERACIONES HISTÓRICAS, USUARIOS Y SUCURSALES                -->
+<!-- ======================================================================= -->
+<div class="row g-4 mb-4">
+    <!-- Indicador 15: Conteo histórico total de movimientos por tipo -->
+    <div class="col-md-4">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-database-check text-secondary me-2"></i>Indicador 15: Movimientos Históricos
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tipo</th>
+                                <th class="text-center">Operaciones</th>
+                                <th class="text-end">Unidades Físicas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mov in ind15_movimientos_tipo %}
+                            <tr>
+                                <td class="fw-bold">
+                                    {% if mov.tipo == 'ENTRADA' %}
+                                        <span class="text-success"><i class="bi bi-arrow-down-left me-1"></i>Entradas</span>
+                                    {% elif mov.tipo == 'SALIDA' %}
+                                        <span class="text-danger"><i class="bi bi-arrow-up-right me-1"></i>Salidas</span>
+                                    {% else %}
+                                        <span class="text-warning"><i class="bi bi-sliders me-1"></i>Ajustes</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center fw-semibold">{{ mov.operaciones }}</td>
+                                <td class="text-end fw-bold">{{ mov.unidades }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador 17: Top 5 Usuarios que más solicitudes han emitido -->
+    <div class="col-md-4">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-people-fill text-primary me-2"></i>Indicador 17: Solicitudes por Usuario
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Usuario</th>
+                                <th class="text-end">Solicitudes Creadas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usr in ind17_top_usuarios %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ usr.username }}</div>
+                                    <small class="text-muted">{{ usr.email|default:"Sin email" }}</small>
+                                </td>
+                                <td class="text-end fw-bold text-primary">{{ usr.total_solicitudes }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted">Sin solicitudes aún.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador 19: Distribución Sucursales Activas vs Inactivas -->
+    <div class="col-md-4">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-building-check text-success me-2"></i>Indicador 19: Estado Sucursales
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-semibold text-dark"><i class="bi bi-check-circle text-success me-1"></i>Sucursales Activas:</span>
+                    <span class="badge bg-success px-3 py-2 fs-6">{{ ind19_sucursales_estado.activas }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-semibold text-dark"><i class="bi bi-dash-circle text-secondary me-1"></i>Sucursales En Remodelación / Inactivas:</span>
+                    <span class="badge bg-secondary px-3 py-2 fs-6">{{ ind19_sucursales_estado.inactivas }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <strong class="text-dark">Total Sucursales en Red Music Pro:</strong>
+                    <strong class="fs-5 text-dark">{{ ind19_sucursales_estado.total }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- BLOQUE 7: INDICADOR 20 - TRAZABILIDAD ÚLTIMAS 10 SOLICITUDES            -->
+<!-- ======================================================================= -->
+<div class="card card-custom overflow-hidden mb-4">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">
+            <i class="bi bi-journal-check text-danger me-2"></i>Indicador 20: Trazabilidad de las Últimas 10 Solicitudes Registradas
+        </h5>
+        <a href="{% url 'lista_solicitudes' %}" class="btn btn-sm btn-outline-danger">Ver Todas</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Fecha / Hora</th>
+                        <th>Sucursal</th>
+                        <th>Usuario Emisor</th>
+                        <th>Productos Solicitados</th>
+                        <th class="text-center">Estado Actual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sol in ind20_ultimas_solicitudes %}
+                    <tr>
+                        <td class="ps-4 font-monospace fw-bold text-dark">#{{ sol.id }}</td>
+                        <td class="text-secondary small">{{ sol.fecha_solicitud|date:"d/m/Y H:i" }}</td>
+                        <td class="fw-semibold text-dark">{{ sol.sucursal.nombre }}</td>
+                        <td class="small">{{ sol.usuario_solicitante.username }}</td>
+                        <td>
+                            <ul class="list-unstyled mb-0 small">
+                                {% for det in sol.detalles.all %}
+                                    <li><i class="bi bi-dot text-danger"></i> {{ det.cantidad_solicitada }}x {{ det.producto.nombre }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td class="text-center">
+                            {% if sol.estado == 'PENDIENTE' %}
+                                <span class="badge bg-warning text-dark px-3 py-2">PENDIENTE</span>
+                            {% elif sol.estado == 'APROBADA' %}
+                                <span class="badge bg-success px-3 py-2">APROBADA</span>
+                            {% elif sol.estado == 'DESPACHADA' %}
+                                <span class="badge bg-primary px-3 py-2">DESPACHADA</span>
+                            {% else %}
+                                <span class="badge bg-danger px-3 py-2">RECHAZADA</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No hay solicitudes registradas en el sistema.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
